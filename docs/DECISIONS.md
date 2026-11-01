@@ -5,3 +5,5 @@ Format: date | decision | reason | who approved
 - 2026-11-01 | Added UNIQUE(task_id, part_code) on task_used_parts | matches Map<InventoryItem,Integer> | team
 - 2026-11-01 | TaskStatus stored as enum, exposed as String | UML says String; enum is safer | team
 - 2026-11-02 | Configurable billing values (coupons, caps, labour rate) passed via immutable BillingPolicy value object | Keeps domain model Spring-free while allowing flexible configuration | team
+- 2026-11-02 | Dev seed migration isolated in db/dev-seed with profile-specific flyway location | Prevents demo data polluting production profile | team
+- 2026-11-02 | Invoices initialized with issuedAt = Instant.now() on creation | Satisfies NOT NULL schema constraint while preserving lifecycle updates | team

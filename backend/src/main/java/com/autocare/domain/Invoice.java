@@ -60,8 +60,8 @@ public class Invoice implements Billable {
     @Transient
     private Instant createdAt = Instant.now();
 
-    @Column(name = "issued_at")
-    private Instant issuedAt;
+    @Column(name = "issued_at", nullable = false)
+    private Instant issuedAt = Instant.now();
 
     @Column(name = "settled_at")
     private Instant settledAt;

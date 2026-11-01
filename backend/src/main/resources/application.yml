@@ -5,6 +5,10 @@ spring:
     password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 5      # Supabase free tier has limited connections
+      max-lifetime: 60000
+      idle-timeout: 30000
+      keepalive-time: 25000
+      connection-timeout: 20000
   jpa:
     hibernate:
       ddl-auto: validate
