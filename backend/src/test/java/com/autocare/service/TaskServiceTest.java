@@ -162,7 +162,6 @@ class TaskServiceTest {
         when(serviceTaskRepository.findById("t1")).thenReturn(Optional.of(task));
 
         InventoryItem item = new InventoryItem("OIL-5W30", "Engine Oil", 8.00, 20, 5);
-        when(inventoryItemRepository.findById("OIL-5W30")).thenReturn(Optional.of(item));
         when(inventoryItemRepository.findByPartCodeForUpdate("OIL-5W30")).thenReturn(Optional.of(item));
 
         TaskPartRequest req = new TaskPartRequest("OIL-5W30", 3);
@@ -183,7 +182,6 @@ class TaskServiceTest {
         when(serviceTaskRepository.findById("t1")).thenReturn(Optional.of(task));
 
         InventoryItem item = new InventoryItem("OIL-5W30", "Engine Oil", 8.00, 2, 5);
-        when(inventoryItemRepository.findById("OIL-5W30")).thenReturn(Optional.of(item));
         when(inventoryItemRepository.findByPartCodeForUpdate("OIL-5W30")).thenReturn(Optional.of(item));
 
         TaskPartRequest req = new TaskPartRequest("OIL-5W30", 5);
