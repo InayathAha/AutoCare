@@ -1,6 +1,12 @@
 import type { IApiError } from '../types';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+
+export function joinUrl(base: string, endpoint: string): string {
+  const cleanBase = base.replace(/\/+$/, '');
+  const cleanEndpoint = endpoint.replace(/^\/+/, '');
+  return `${cleanBase}/${cleanEndpoint}`;
+}
 
 export class ApiErrorResponse extends Error {
   error: IApiError;
@@ -16,29 +22,57 @@ export async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const url = joinUrl(rawBaseUrl, endpoint);
 
   const headers = new Headers(options.headers || {});
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    const apiError: IApiError = {
+      timestamp: new Date().toISOString(),
+      status: 0,
+      error: 'Network Error',
+      code: 'INTERNAL_ERROR',
+      message: `Failed to connect to ${url}: ${errorMsg}`,
+      path: endpoint,
+    };
+    throw new ApiErrorResponse(apiError);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  const isJson = contentType.includes('application/json');
 
   if (!response.ok) {
     let apiError: IApiError;
-    try {
-      apiError = (await response.json()) as IApiError;
-    } catch {
+    if (isJson) {
+      try {
+        apiError = (await response.json()) as IApiError;
+      } catch {
+        apiError = {
+          timestamp: new Date().toISOString(),
+          status: response.status,
+          error: response.statusText || 'Error',
+          code: 'INTERNAL_ERROR',
+          message: `HTTP error ${response.status} from ${url} (failed to parse JSON)`,
+          path: endpoint,
+        };
+      }
+    } else {
       apiError = {
         timestamp: new Date().toISOString(),
         status: response.status,
-        error: response.statusText,
-        code: 'INTERNAL_ERROR',
-        message: `HTTP error ${response.status}: ${response.statusText}`,
+        error: response.statusText || 'HTTP Error',
+        code: response.status === 404 ? 'NOT_FOUND' : 'INTERNAL_ERROR',
+        message: `HTTP error ${response.status} from ${url} (non-JSON response)`,
         path: endpoint,
       };
     }
@@ -50,11 +84,34 @@ export async function request<T>(
     return {} as T;
   }
 
-  const contentType = response.headers.get('Content-Type') || '';
   if (contentType.includes('text/plain')) {
     const text = await response.text();
     return text as unknown as T;
   }
 
-  return response.json() as Promise<T>;
+  if (!isJson) {
+    const apiError: IApiError = {
+      timestamp: new Date().toISOString(),
+      status: response.status,
+      error: 'Invalid Content-Type',
+      code: 'INTERNAL_ERROR',
+      message: `HTTP error ${response.status} from ${url} (expected JSON, received '${contentType || 'unknown'}')`,
+      path: endpoint,
+    };
+    throw new ApiErrorResponse(apiError);
+  }
+
+  try {
+    return (await response.json()) as T;
+  } catch {
+    const apiError: IApiError = {
+      timestamp: new Date().toISOString(),
+      status: response.status,
+      error: 'JSON Parse Error',
+      code: 'INTERNAL_ERROR',
+      message: `HTTP error ${response.status} from ${url} (malformed JSON response)`,
+      path: endpoint,
+    };
+    throw new ApiErrorResponse(apiError);
+  }
 }

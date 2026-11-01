@@ -101,6 +101,63 @@ The frontend UI will be available at `http://localhost:5173`.
 
 ---
 
+## Deployment Guide (Cloud & Containers)
+
+AutoCare is designed to be deployed across modern cloud platforms with zero secret leakage and full environment variable decoupling.
+
+### Required Environment Variables
+
+#### 1. Backend (`backend/` or Container Environment)
+| Variable | Description | Example / Default |
+|---|---|---|
+| `DB_URL` | PostgreSQL JDBC connection URL | `jdbc:postgresql://<host>:5432/postgres?sslmode=require` |
+| `DB_USERNAME` | Supabase / PostgreSQL username | `postgres.<project-ref>` |
+| `DB_PASSWORD` | PostgreSQL database password | `<your-db-password>` |
+| `PORT` | Dynamic HTTP server port (Render/Railway injects this) | `8080` (default) |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated list of allowed frontend origins | `http://localhost:5173,https://autocare-frontend.vercel.app` |
+
+#### 2. Frontend (`frontend/` or Vercel Environment)
+| Variable | Description | Example / Default |
+|---|---|---|
+| `VITE_API_BASE_URL` | Full URL to the backend REST API base (must include `/api/v1`) | `http://localhost:8080/api/v1` (local default)<br>`https://autocare-backend.onrender.com/api/v1` (production) |
+
+---
+
+### Deploying Backend to Render or Railway
+
+The backend includes a production-ready, multi-stage [`backend/Dockerfile`](backend/Dockerfile):
+
+1. **Render (Web Service):**
+   - **Environment:** Docker
+   - **Root Directory:** `backend`
+   - **Environment Variables:** Set `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `CORS_ALLOWED_ORIGINS` (your Vercel frontend URL).
+   - Render automatically sets `PORT=10000`, which Spring Boot binds to dynamically.
+   - **Health Check Path:** `/actuator/health`
+
+2. **Railway:**
+   - Create a new project pointing to the repository.
+   - In Settings, set **Root Directory** to `backend`.
+   - Add the required environment variables (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `CORS_ALLOWED_ORIGINS`). Railway injects `PORT`.
+
+---
+
+### Deploying Frontend to Vercel
+
+1. Import the repository in **Vercel**.
+2. Set **Root Directory** to `frontend`.
+3. Framework Preset: **Vite**.
+4. Under **Environment Variables**, add:
+   - **Key:** `VITE_API_BASE_URL`
+   - **Value:** `https://<your-backend-app>.onrender.com/api/v1` (points directly to your deployed backend API root).
+5. Deploy.
+6. Copy your deployed Vercel domain (e.g., `https://autocare-app.vercel.app`) and append it to `CORS_ALLOWED_ORIGINS` on your backend service.
+
+> [!IMPORTANT]
+> If `VITE_API_BASE_URL` is omitted on Vercel, the client will fall back to local dev or log clear error diagnostics:
+> `HTTP error 404 from <URL> (non-JSON response)`, highlighting the missing API endpoint immediately.
+
+---
+
 ## Core OOP Principles in AutoCare
 
 The AutoCare domain model strictly demonstrates core Object-Oriented Programming concepts without anemic domain anti-patterns or artificial switch statements:
