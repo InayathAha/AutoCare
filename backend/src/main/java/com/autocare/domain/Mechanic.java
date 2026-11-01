@@ -62,12 +62,26 @@ public class Mechanic extends Employee {
         return specialization;
     }
 
+    public void setSpecialization(String specialization) {
+        if (specialization == null || specialization.isBlank()) {
+            throw new IllegalArgumentException("Specialization cannot be null or blank");
+        }
+        this.specialization = specialization.trim();
+    }
+
     public int getOvertimeHours() {
         return overtimeHours;
     }
 
     public double getHourlyRate() {
         return hourlyRate != null ? hourlyRate.doubleValue() : 0.0;
+    }
+
+    public void setHourlyRate(double hourlyRate) {
+        if (hourlyRate < 0) {
+            throw new IllegalArgumentException("Hourly rate cannot be negative");
+        }
+        this.hourlyRate = BigDecimal.valueOf(hourlyRate).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**

@@ -1,0 +1,166 @@
+classDiagram
+    direction TB
+
+    class Billable {
+        <<interface>>
+        +calculateTotal() double
+        +generateReceipt() String
+    }
+
+    class Person {
+        <<abstract>>
+        #String id
+        #String name
+        #String phone
+        #String email
+        +getId() String
+        +getName() String
+        +getPhone() String
+        +getEmail() String
+        +getContactDetails() String
+        +displayProfile()* void
+    }
+
+    class Customer {
+        -List~Vehicle~ registeredVehicles
+        -int loyaltyPoints
+        +registerVehicle(Vehicle v) void
+        +addLoyaltyPoints(int points) void
+        +redeemPoints(int points) boolean
+        +displayProfile() void
+    }
+
+    class Employee {
+        <<abstract>>
+        #double baseSalary
+        +getBaseSalary() double
+        +calculateSalary()* double
+        +displayProfile() void
+    }
+
+    class Mechanic {
+        -String specialization
+        -double overtimeHours
+        -double hourlyRate
+        +logOvertime(double hours) void
+        +calculateSalary() double
+        +completeServiceTask(ServiceTask task) void
+        +displayProfile() void
+    }
+
+    class Manager {
+        -double monthlyBonus
+        +calculateSalary() double
+        +approveDiscount(Invoice invoice, double percentage) void
+        +generateMonthlyReport(List~InventoryItem~ items) String
+        +displayProfile() void
+    }
+
+    class Vehicle {
+        <<abstract>>
+        #String licensePlate
+        #String brand
+        #String model
+        #Customer owner
+        #BigDecimal baseServiceFee
+        +getLicensePlate() String
+        +getBrand() String
+        +getModel() String
+        +getOwner() Customer
+        +setOwner(Customer owner) void
+        +getBaseServiceFee()* double
+        +getVehicleType()* String
+    }
+
+    class Car {
+        -int seatingCapacity
+        +getBaseServiceFee() double
+        +getVehicleType() String
+    }
+
+    class Van {
+        -double cargoVolume
+        +getBaseServiceFee() double
+        +getVehicleType() String
+    }
+
+    class Motorcycle {
+        -int engineCC
+        +getBaseServiceFee() double
+        +getVehicleType() String
+    }
+
+    class InventoryItem {
+        -String partCode
+        -String partName
+        -BigDecimal unitPrice
+        -int stockQuantity
+        -int reorderThreshold
+        -Instant lastRestockedAt
+        +deductStock(int quantity) boolean
+        +restock(int quantity) void
+        +isLowStock() boolean
+    }
+
+    class ServiceTask {
+        -String taskId
+        -Invoice invoice
+        -Mechanic assignedMechanic
+        -String description
+        -TaskStatus status
+        -List~TaskUsedPart~ usedParts
+        -BigDecimal billableHours
+        -BigDecimal laborCharge
+        -BigDecimal partsCost
+        -BigDecimal totalTaskCost
+        +addUsedPart(InventoryItem item, int quantity) void
+        +recordBillableHours(double hours, double ratePerHour) void
+        +startTask() void
+        +completeTask() void
+        +calculateTaskCost() double
+    }
+
+    class TaskUsedPart {
+        -Long usedPartId
+        -ServiceTask task
+        -InventoryItem item
+        -int quantity
+        -BigDecimal unitPrice
+        -BigDecimal subtotal
+    }
+
+    class Invoice {
+        -String invoiceId
+        -Customer customer
+        -Vehicle vehicle
+        -List~ServiceTask~ taskList
+        -double taxRate
+        -double discountAmount
+        -InvoiceStatus status
+        +calculateSubtotal() double
+        +calculateTotal() double
+        +generateReceipt() String
+        +applyDiscount(double percentage) void
+        +applyDiscount(String couponCode, double fixedReduction) void
+        +addTask(ServiceTask t) void
+        +issue() void
+        +settle() void
+    }
+
+    Person <|-- Customer : Inheritance
+    Person <|-- Employee : Inheritance
+    Employee <|-- Mechanic : Inheritance
+    Employee <|-- Manager : Inheritance
+    Vehicle <|-- Car : Inheritance
+    Vehicle <|-- Van : Inheritance
+    Vehicle <|-- Motorcycle : Inheritance
+
+    Customer "1" --> "0..*" Vehicle : owns
+    Customer "1" --> "0..*" Invoice : billed to
+    Vehicle "1" --> "0..*" Invoice : serviced
+    Invoice "1" *-- "1..*" ServiceTask : composition
+    Mechanic "1" --> "0..*" ServiceTask : assigned to
+    ServiceTask "1" *-- "0..*" TaskUsedPart : attaches
+    InventoryItem "1" <-- "0..*" TaskUsedPart : references
+    Billable <|.. Invoice : Realization
+    Manager ..> Invoice : approves discount

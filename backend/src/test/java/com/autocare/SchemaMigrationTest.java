@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @DisplayName("T3.1 - Flyway Schema & PostgreSQL Persistence Acceptance")
+@EnabledIf("isDbAvailable")
 class SchemaMigrationTest {
 
     private static final String MIGRATION_PATH = "db/migration/V1__init_schema.sql";
@@ -156,6 +157,10 @@ class SchemaMigrationTest {
                     .as("Table %s must have Row Level Security enabled (rowsecurity=true)", expectedTable)
                     .isTrue();
         }
+    }
+
+    static boolean isDbAvailable() {
+        return (postgres != null && postgres.isRunning()) || isDbConfigured();
     }
 
     static boolean isDockerOrDbAvailable() {

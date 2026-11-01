@@ -18,3 +18,15 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+autocare:
+  billing:
+    labor-rate-per-hour: 20.00
+    default-tax-rate: 8.00
+    max-unapproved-discount-pct: 10.00
+    coupons:
+      SAVE10: 10.00
+      WELCOME20: 20.00
+      SPRING5: 5.00
+  loyalty:
+    points-per-currency-unit: 0.1

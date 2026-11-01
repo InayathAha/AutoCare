@@ -2,9 +2,7 @@ package com.autocare;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
@@ -20,27 +18,31 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 1. Default/production profile excludes dev-seed location from Flyway.
  * 2. V2__seed_dev_data.sql exists and contains all required demo entities.
  */
-@SpringBootTest(properties = {
-        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration",
-        "DB_URL=jdbc:postgresql://localhost:5432/unused",
-        "DB_USERNAME=unused",
-        "DB_PASSWORD=unused"
-})
 @DisplayName("T3.3 - Dev Seed Profile and Migration Script Verification")
 class DevSeedProfileTest {
 
-    @Value("${spring.flyway.locations:classpath:db/migration}")
-    private String flywayLocations;
-
-    @Autowired
-    private ResourceLoader resourceLoader;
+    private final ResourceLoader resourceLoader = new DefaultResourceLoader();
 
     @Test
     @DisplayName("Default profile only loads standard migrations, excluding dev-seed")
-    void defaultProfileExcludesDevSeed() {
-        assertThat(flywayLocations)
-                .as("Flyway locations in default profile must NOT contain dev-seed")
-                .doesNotContain("dev-seed");
+    void defaultProfileExcludesDevSeed() throws Exception {
+        Resource defaultYaml = resourceLoader.getResource("classpath:application.yml");
+        assertThat(defaultYaml.exists()).isTrue();
+        try (InputStream is = defaultYaml.getInputStream()) {
+            String yaml = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            assertThat(yaml)
+                    .as("Flyway locations in application.yml must NOT contain dev-seed")
+                    .doesNotContain("dev-seed");
+        }
+
+        Resource devYaml = resourceLoader.getResource("classpath:application-dev.yml");
+        assertThat(devYaml.exists()).isTrue();
+        try (InputStream is = devYaml.getInputStream()) {
+            String yaml = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            assertThat(yaml)
+                    .as("Flyway locations in application-dev.yml MUST contain dev-seed")
+                    .contains("dev-seed");
+        }
     }
 
     @Test

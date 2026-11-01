@@ -4,6 +4,7 @@ import com.autocare.exception.BusinessRuleViolationException;
 import com.autocare.exception.InsufficientStockException;
 import com.autocare.exception.InvalidStateTransitionException;
 import jakarta.persistence.*;
+import org.springframework.data.domain.Persistable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,11 +23,30 @@ import java.util.*;
  */
 @Entity
 @Table(name = "service_tasks")
-public class ServiceTask {
+public class ServiceTask implements Persistable<String> {
 
     @Id
     @Column(name = "task_id", length = 36, nullable = false)
     private String taskId;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public String getId() {
+        return this.taskId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    public void markNotNew() {
+        this.isNew = false;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id")

@@ -79,6 +79,27 @@ public abstract class Person {
         return email;
     }
 
+    public void setName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Person name cannot be null or blank");
+        }
+        this.name = name.trim();
+    }
+
+    public void setPhone(String phone) {
+        if (phone == null || phone.isBlank()) {
+            throw new IllegalArgumentException("Person phone cannot be null or blank");
+        }
+        this.phone = phone.trim();
+    }
+
+    public void setEmail(String email) {
+        if (email == null || email.isBlank() || !email.contains("@")) {
+            throw new IllegalArgumentException("A valid email address is required");
+        }
+        this.email = email.trim();
+    }
+
     /**
      * Returns concatenated contact details per UML requirement: name, phone, email.
      */

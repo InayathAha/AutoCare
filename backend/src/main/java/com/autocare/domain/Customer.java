@@ -18,7 +18,7 @@ import java.util.List;
 @AttributeOverride(name = "id", column = @Column(name = "customer_id", length = 36, nullable = false))
 public class Customer extends Person {
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "owner")
     private List<Vehicle> registeredVehicles = new ArrayList<>();
 
     @Column(name = "loyalty_points", nullable = false)

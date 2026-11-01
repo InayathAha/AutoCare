@@ -1,0 +1,90 @@
+erDiagram
+    CUSTOMERS ||--o{ VEHICLES : "registers / owns"
+    CUSTOMERS ||--o{ INVOICES : "billed to"
+    VEHICLES ||--o{ INVOICES : "serviced in"
+    EMPLOYEES ||--o{ SERVICE_TASKS : "assigned to"
+    INVOICES ||--|{ SERVICE_TASKS : "itemizes (composition)"
+    SERVICE_TASKS ||--o{ TASK_USED_PARTS : "consumes"
+    INVENTORY_ITEMS ||--o{ TASK_USED_PARTS : "part snapshot"
+
+    CUSTOMERS {
+        varchar(36) customer_id PK
+        varchar(100) name
+        varchar(20) phone
+        varchar(100) email UK
+        integer loyalty_points
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    VEHICLES {
+        varchar(20) license_plate PK
+        varchar(36) customer_id FK
+        varchar(20) vehicle_type
+        varchar(50) brand
+        varchar(50) model
+        numeric(10,2) base_service_fee
+        integer seating_capacity
+        numeric(6,2) cargo_volume
+        integer engine_cc
+        timestamptz registered_at
+    }
+
+    EMPLOYEES {
+        varchar(36) employee_id PK
+        varchar(20) employee_role
+        varchar(100) name
+        varchar(20) phone
+        varchar(100) email UK
+        numeric(10,2) base_salary
+        varchar(50) specialization
+        numeric(6,2) overtime_hours
+        numeric(8,2) hourly_rate
+        numeric(10,2) monthly_bonus
+        timestamptz hired_at
+    }
+
+    INVENTORY_ITEMS {
+        varchar(50) part_code PK
+        varchar(100) part_name
+        numeric(10,2) unit_price
+        integer stock_quantity
+        integer reorder_threshold
+        timestamptz last_restocked_at
+    }
+
+    INVOICES {
+        varchar(36) invoice_id PK
+        varchar(36) customer_id FK
+        varchar(20) license_plate FK
+        numeric(10,2) subtotal
+        numeric(10,2) discount_amount
+        numeric(5,2) tax_rate
+        numeric(10,2) total_amount
+        varchar(20) payment_status
+        timestamptz issued_at
+        timestamptz settled_at
+    }
+
+    SERVICE_TASKS {
+        varchar(36) task_id PK
+        varchar(36) invoice_id FK
+        varchar(36) assigned_mechanic_id FK
+        text description
+        varchar(20) status
+        numeric(4,2) billable_hours
+        numeric(10,2) labor_charge
+        numeric(10,2) parts_cost
+        numeric(10,2) total_task_cost
+        timestamptz created_at
+    }
+
+    TASK_USED_PARTS {
+        bigserial used_part_id PK
+        varchar(36) task_id FK
+        varchar(50) part_code FK
+        integer quantity
+        numeric(10,2) unit_price
+        numeric(10,2) subtotal
+        timestamptz attached_at
+    }

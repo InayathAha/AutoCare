@@ -169,6 +169,7 @@ class RepositoryIntegrationTest {
         Van van = new Van(vanPlate, "Ford", "Transit", savedCustomer, 12.5);
         Motorcycle moto = new Motorcycle(motoPlate, "Yamaha", "MT-07", savedCustomer, 689);
 
+        vehicleRepository.saveAll(List.of(car, van, moto));
         savedCustomer.registerVehicle(car);
         savedCustomer.registerVehicle(van);
         savedCustomer.registerVehicle(moto);
@@ -234,6 +235,7 @@ class RepositoryIntegrationTest {
         Customer savedCustomer = customerRepository.save(customer);
 
         Car car = new Car("FK-" + uid, "Honda", "Civic", savedCustomer, 5);
+        vehicleRepository.save(car);
         savedCustomer.registerVehicle(car);
         customerRepository.save(savedCustomer);
         entityManager.flush();
@@ -252,6 +254,7 @@ class RepositoryIntegrationTest {
         String uid = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         Customer customer = customerRepository.save(new Customer(UUID.randomUUID().toString(), "Snap Cust " + uid, "077222" + uid, "snap_" + uid + "@garage.com"));
         Car car = new Car("SNAP-" + uid, "Mazda", "3", customer, 5);
+        vehicleRepository.save(car);
         customer.registerVehicle(car);
         customerRepository.save(customer);
 
