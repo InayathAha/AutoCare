@@ -62,10 +62,18 @@ class SchemaMigrationTest {
         return dbUrl != null && !dbUrl.isBlank();
     }
 
-    @Container
-    static PostgreSQLContainer<?> postgres = isDockerAvailable() && !isDbConfigured()
-            ? new PostgreSQLContainer<>("postgres:16-alpine")
-            : null;
+    static PostgreSQLContainer<?> postgres;
+
+    static {
+        if (isDockerAvailable() && !isDbConfigured()) {
+            try {
+                postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+                postgres.start();
+            } catch (Throwable t) {
+                postgres = null;
+            }
+        }
+    }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
