@@ -1,6 +1,25 @@
 import type { IApiError } from '../types';
 
-const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+// Resolve API base URL across Vercel service bindings, Vite build variables, and local dev
+function resolveApiBaseUrl(): string {
+  // 1. Runtime service binding injected by Vercel (process.env.API_URL)
+  if (typeof process !== 'undefined' && process.env?.API_URL) {
+    const bound = process.env.API_URL.replace(/\/+$/, '');
+    return `${bound}/api/v1`;
+  }
+  // 2. Build-time or deployment environment variable
+  if (import.meta.env?.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  // 3. Browser environment on Vercel deployment: use relative path to route through Vercel /api rewrite
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return '/api/v1';
+  }
+  // 4. Local development default
+  return 'http://localhost:8080/api/v1';
+}
+
+const rawBaseUrl = resolveApiBaseUrl();
 
 export function joinUrl(base: string, endpoint: string): string {
   const cleanBase = base.replace(/\/+$/, '');
