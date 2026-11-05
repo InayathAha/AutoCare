@@ -1,0 +1,10 @@
+{
+  "description": "Manage garage customers, vehicles, employees, repairs, inventory, and invoices in one system, helping workshop teams streamline service and payments.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
